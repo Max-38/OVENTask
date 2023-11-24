@@ -1,0 +1,104 @@
+﻿<Window x:Class="OVENTask.App.Views.AddWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        DataContext="{Binding Source={StaticResource Program}, Path=MainWindowVM}"
+        mc:Ignorable="d"
+        Title="AddWindow" Height="375" Width="500"
+        Name="AddPassengerWindow"
+        ResizeMode="NoResize">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="75"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="75"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <TextBlock 
+            Grid.Row="0"
+            Grid.ColumnSpan="2"
+            Text="Добавление пассажира"
+            TextAlignment="Center"
+            VerticalAlignment="Center"
+            FontSize="24"
+            FontWeight="Bold"/>
+
+        <StackPanel
+            Grid.Row="1"
+            Grid.ColumnSpan="2"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Width="400"
+            Name="DataPanel">
+            
+            <StackPanel.BindingGroup>
+                <BindingGroup NotifyOnValidationError="True">
+                    <BindingGroup.ValidationRules>
+                        <DataErrorValidationRule />
+                    </BindingGroup.ValidationRules>
+                </BindingGroup>
+            </StackPanel.BindingGroup>
+
+            <Label HorizontalAlignment="Center" Target="{Binding ElementName=TextBoxFullName}">Полное имя</Label>
+            <TextBox Name ="TextBoxFullName" FontSize="16" Text="{Binding Path=NewPassenger.FullName, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}">
+                <Validation.ErrorTemplate>
+                    <ControlTemplate>
+                        <StackPanel>
+                            <AdornedElementPlaceholder />
+                            <TextBlock Text="{Binding [0].ErrorContent}" Foreground="Red"/>
+                        </StackPanel>
+                    </ControlTemplate>
+                </Validation.ErrorTemplate>
+            </TextBox>
+            <Separator Opacity="0" Height="10"/>
+
+            <Label HorizontalAlignment="Center" Target="{Binding ElementName=DateTimePickerDepartureTime}">Дата и время вылета</Label>
+            <xctk:DateTimePicker Name="DateTimePickerDepartureTime" Format="FullDateTime" Value="{Binding Path=NewPassenger.DepartureTime, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}">
+                <Validation.ErrorTemplate>
+                    <ControlTemplate>
+                        <StackPanel>
+                            <AdornedElementPlaceholder />
+                            <TextBlock Text="{Binding [0].ErrorContent}" Foreground="Red"/>
+                        </StackPanel>
+                    </ControlTemplate>
+                </Validation.ErrorTemplate>
+            </xctk:DateTimePicker>
+            <Separator Opacity="0" Height="10"/>
+
+            <Label HorizontalAlignment="Center" Target="{Binding ElementName=TextBoxFlightNumber}">Номер рейса</Label>
+            <TextBox Name="TextBoxFlightNumber" FontSize="16" Text="{Binding Path=NewPassenger.FlightNumber, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}">
+                <Validation.ErrorTemplate>
+                    <ControlTemplate>
+                        <StackPanel>
+                            <AdornedElementPlaceholder />
+                            <TextBlock Text="{Binding [0].ErrorContent}" Foreground="Red"/>
+                        </StackPanel>
+                    </ControlTemplate>
+                </Validation.ErrorTemplate>
+            </TextBox>
+        </StackPanel>
+
+        <Button 
+            Grid.Row="2"
+            Grid.Column="0"
+            Height="45"
+            Width="120"
+            Content="Добавить"
+            Command="{Binding Add}"
+            CommandParameter="{Binding ElementName=DataPanel}"/>
+        <Button
+            Grid.Row="2"
+            Grid.Column="1"
+            Height="45"
+            Width="120"
+            Content="Отмена"
+            Command="{Binding Close}"
+            CommandParameter="{Binding ElementName=AddPassengerWindow}"/>
+    </Grid>
+</Window>

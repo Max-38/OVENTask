@@ -1,0 +1,129 @@
+﻿<Window x:Class="OVENTask.App.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        DataContext="{Binding Source={StaticResource Program}, Path=MainWindowVM}"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="75" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <Menu Grid.ColumnSpan="3">
+            <MenuItem Header="Файл">
+                <MenuItem Header="Открыть" Command="{Binding Open}" />
+                <MenuItem Header="Новый" Command="{Binding Clear}"/>
+                <MenuItem Header="Сохранить" Command="{Binding Save}" CommandParameter="{Binding Passengers}"/>
+            </MenuItem>
+        </Menu>
+
+        <TextBlock 
+            Grid.Row="0"
+            Grid.ColumnSpan="3"
+            Text="Список пассажиров"
+            FontSize="24"
+            FontWeight="Bold"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Center"/>
+
+        <ScrollViewer Grid.Row="1" Grid.ColumnSpan="3" VerticalScrollBarVisibility="Auto">
+            <DataGrid
+                Grid.Row="1"
+                Name="DataGridPassengers"
+                ItemsSource="{Binding Passengers}"
+                AutoGenerateColumns="False"
+                ColumnHeaderHeight="35"
+                ColumnWidth="*"
+                FontSize="16"
+                RowHeight="25"
+                SelectionMode="Single">
+                <DataGrid.Columns>
+                    <DataGridTextColumn
+                        Header="Полное имя"
+                        Binding="{Binding FullName}"
+                        IsReadOnly="True">
+                        <DataGridTextColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="TextBlock.TextAlignment" Value="Center"/>
+                            </Style>
+                        </DataGridTextColumn.HeaderStyle>
+                        <DataGridTextColumn.CellStyle>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="TextBlock.TextAlignment" Value="Center"/>
+                            </Style>
+                        </DataGridTextColumn.CellStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn
+                        Header="Время отправления"
+                        Binding="{Binding DepartureTime, StringFormat=\{0:dd.MM.yyyy HH:mm:ss\}}"
+                        IsReadOnly="True">
+                        <DataGridTextColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="TextBlock.TextAlignment" Value="Center"/>
+                            </Style>
+                        </DataGridTextColumn.HeaderStyle>
+                        <DataGridTextColumn.CellStyle>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="TextBlock.TextAlignment" Value="Center"/>
+                            </Style>
+                        </DataGridTextColumn.CellStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn
+                        Header="Номер рейса"
+                        Binding="{Binding FlightNumber}"
+                        IsReadOnly="True">
+                        <DataGridTextColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="TextBlock.TextAlignment" Value="Center"/>
+                            </Style>
+                        </DataGridTextColumn.HeaderStyle>
+                        <DataGridTextColumn.CellStyle>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="TextBlock.TextAlignment" Value="Center"/>
+                            </Style>
+                        </DataGridTextColumn.CellStyle>
+                    </DataGridTextColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </ScrollViewer>
+        
+        <Button
+            Grid.Row="2"
+            Grid.Column="0"
+            Height="50"
+            Width="120"
+            Content="Добавить"
+            FontSize="16"
+            Command="{Binding OpenAddWindow}"
+            CommandParameter="{Binding Passengers}"/>
+        <Button
+            Grid.Row="2"
+            Grid.Column="1"
+            Height="50"
+            Width="120"
+            Content="Изменить"
+            FontSize="16"
+            Command="{Binding OpenUpdateWindow}"
+            CommandParameter="{Binding ElementName=DataGridPassengers, Path=SelectedItem}"/>
+        <Button
+            Grid.Row="2"
+            Grid.Column="2"
+            Height="50"
+            Width="120"
+            Content="Удалить"
+            FontSize="16"
+            Command="{Binding Delete}"
+            CommandParameter="{Binding ElementName=DataGridPassengers, Path=SelectedItem}"/>
+    </Grid>
+</Window>
