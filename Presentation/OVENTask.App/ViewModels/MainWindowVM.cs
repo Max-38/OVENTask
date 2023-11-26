@@ -1,5 +1,6 @@
 ﻿using DevExpress.Mvvm;
 using DevExpress.Mvvm.Native;
+using Microsoft.Extensions.Logging;
 using OVENTask.App.Models;
 using OVENTask.App.Views;
 using OVENTask.Application.Services;
@@ -17,14 +18,16 @@ namespace OVENTask.App.ViewModels
     {
         private readonly FileService fileService;
         private readonly Models.Interfaces.IDialogService dialogService;
+        private readonly ILogger logger;
 
         public ObservableCollection<Passenger>? Passengers {get; set;}
         public Passenger? NewPassenger { get; set;} = new Passenger("Введите имя пассажира", DateTime.Now, "Введите номер рейса");
 
-        public MainWindowVM(FileService fileService, Models.Interfaces.IDialogService dialogService)
+        public MainWindowVM(FileService fileService, Models.Interfaces.IDialogService dialogService, ILogger<MainWindowVM> logger)
         {
             this.fileService = fileService;
             this.dialogService = dialogService;
+            this.logger = logger;
         }
 
         #region Открытие и сохранение файла
@@ -32,6 +35,7 @@ namespace OVENTask.App.ViewModels
         //Команда для окна открытия файла
         public ICommand Open => new RelayCommand(obj =>
         {
+            
             try
             {
                 if(dialogService.OpenFileDialog() == true)
@@ -39,11 +43,13 @@ namespace OVENTask.App.ViewModels
                     Passengers = fileService.OpenFile(dialogService.FilePath).ToObservableCollection();
 
                     dialogService.ShowMessage("Файл открыт");
+                    logger.LogInformation("Открыт файл");
                 }
             }
             catch (Exception ex)
             {
                 dialogService.ShowMessage(ex.Message);
+                logger.LogError("Не удалось открыть файл");
             }
         });
         
@@ -55,25 +61,35 @@ namespace OVENTask.App.ViewModels
                 if(dialogService.SaveFileDialog() == true)
                 {
                     dialogService.ShowMessage(fileService.SaveFile(Passengers.ToList(), dialogService.FilePath));
+                    logger.LogInformation("Сохранен файл");
                 }
             }
             catch (Exception ex)
             {
                 dialogService.ShowMessage(ex.Message);
+                logger.LogError("Ошибка при сохранении файла");
             }
         }, obj => obj != null);
         #endregion
-
 
         #region Добавления нового пассажира в список
 
         //Команда открытия окна добавления пассажира
         public ICommand OpenAddWindow => new RelayCommand(obj =>
         {
-            AddWindow addWindow = new AddWindow();
-            addWindow.Owner = System.Windows.Application.Current.MainWindow;
-            addWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            addWindow.ShowDialog();
+            try
+            {
+                AddWindow addWindow = new AddWindow();
+                addWindow.Owner = System.Windows.Application.Current.MainWindow;
+                addWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                logger.LogInformation("Открытие окна добавления пассажира");
+                addWindow.ShowDialog();         
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                logger.LogError("Ошибка при открытии окна добавления пассажира");
+            }
         }, obj => obj != null);
 
         //Команда добавления пассажира в список
@@ -86,9 +102,13 @@ namespace OVENTask.App.ViewModels
                 Passengers.Add(NewPassenger);
                 NewPassenger = new Passenger("Введите имя пассажира", DateTime.Now, "Введите номер рейса");
                 System.Windows.Application.Current.Windows[2].Close();
+                logger.LogInformation("Добавлен пассажир");
             }
             else
+            {
                 MessageBox.Show("Данные введены неверно");
+                logger.LogInformation("Введены некорректные данные");
+            }
         });
         #endregion
 
@@ -97,12 +117,21 @@ namespace OVENTask.App.ViewModels
         //Команда открытия окна редактирования пассажира
         public ICommand OpenUpdateWindow => new RelayCommand(obj =>
         {
-            NewPassenger = obj as Passenger;
+            try
+            {
+                NewPassenger = obj as Passenger;
 
-            UpdateWindow updateWindow = new UpdateWindow();
-            updateWindow.Owner = System.Windows.Application.Current.MainWindow;
-            updateWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            updateWindow.ShowDialog();
+                UpdateWindow updateWindow = new UpdateWindow();
+                updateWindow.Owner = System.Windows.Application.Current.MainWindow;
+                updateWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                logger.LogInformation("Открытие окна редактирования пассажира");
+                updateWindow.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                logger.LogError("Ошибка при открытии окна редактирования пассажира");
+            }
         }, obj => obj != null);
 
         //Команда сохранения отредактированных данных о пассажире
@@ -118,9 +147,18 @@ namespace OVENTask.App.ViewModels
                     updatePassenger = NewPassenger;
                     NewPassenger = new Passenger("Введите имя пассажира", DateTime.Now, "Введите номер рейса");
                     System.Windows.Application.Current.Windows[2].Close();
+                    logger.LogInformation("Редактирование прассажира завершено успешно");
                 }
                 else
+                {
                     MessageBox.Show("Запись не найдена");
+                    logger.LogError("Ошибка при удалении пассажира. Не найден пассажир с id == " + NewPassenger.Id);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Данные введены неверно");
+                logger.LogInformation("Введены некорректные данные");
             }
         });
         #endregion
@@ -133,9 +171,15 @@ namespace OVENTask.App.ViewModels
             Passenger? deletePassenger = Passengers.FirstOrDefault(x => x.Id == selectedPassenger.Id);
 
             if (deletePassenger == null)
+            {
                 MessageBox.Show("Запись не найдена");
+                logger.LogError("Ошибка при удалении пассажира. Не найден пассажир с id == " + selectedPassenger.Id);
+            }
             else if (MessageBox.Show("Вы уверены, что хотите удалить запись", "Удаление записи", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            {
                 Passengers.Remove(deletePassenger);
+                logger.LogInformation("Удален пассажир из списка");
+            }
         }, obj => obj != null);
 
         //Команда для создания нового списка
@@ -144,7 +188,8 @@ namespace OVENTask.App.ViewModels
             if (Passengers != null)
                 Passengers.Clear();
             else
-                Passengers = new ObservableCollection<Passenger>(); 
+                Passengers = new ObservableCollection<Passenger>();
+            logger.LogInformation("Создание нового списка пассажиров");
         });
 
         //Команда закрытия окна

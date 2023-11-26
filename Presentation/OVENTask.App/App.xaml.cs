@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using NLog.Web;
+using System;
+using System.Windows;
 
 namespace OVENTask.App
 {
@@ -9,9 +11,20 @@ namespace OVENTask.App
     {
         protected override void OnStartup(StartupEventArgs e)
         {
-            Program.Init();
+            var logger = NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
 
-            base.OnStartup(e);
+            try
+            {
+                Program.Init();
+
+                base.OnStartup(e);
+
+                logger.Debug("Запуск программы");
+            }
+            catch (Exception ex)
+            {
+                logger.Fatal(ex + "ошибка при запуске");
+            }
         }
     }
 }
